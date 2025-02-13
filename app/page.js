@@ -1,117 +1,142 @@
-"use client";
-import { useState } from "react";
+"use client"
+
+import { useState } from "react"
+import { ArrowRight, BarChart2, RefreshCw } from "lucide-react"
 
 export default function Page() {
-  // Estados para entrenar
-  const [trainAssetType, setTrainAssetType] = useState("crypto");
-  const [trainSymbol, setTrainSymbol] = useState("BTC");
-  const [trainLogs, setTrainLogs] = useState("");
+  const [trainAssetType, setTrainAssetType] = useState("crypto")
+  const [trainSymbol, setTrainSymbol] = useState("BTC")
+  const [trainLogs, setTrainLogs] = useState("")
 
-  // Estados para predecir
-  const [predictAssetType, setPredictAssetType] = useState("crypto");
-  const [predictSymbol, setPredictSymbol] = useState("BTC");
-  const [predictDays, setPredictDays] = useState("1");
-  const [predictLogs, setPredictLogs] = useState("");
+  const [predictAssetType, setPredictAssetType] = useState("crypto")
+  const [predictSymbol, setPredictSymbol] = useState("BTC")
+  const [predictDays, setPredictDays] = useState("1")
+  const [predictLogs, setPredictLogs] = useState("")
 
-  // SSE de entrenamiento
   const startTraining = () => {
-    setTrainLogs("Iniciando entrenamiento...\n");
-    const url = `/api/train?assetType=${trainAssetType}&symbol=${trainSymbol}`;
-    const eventSource = new EventSource(url);
+    setTrainLogs("Starting training...\n")
+    const url = `/api/train?assetType=${trainAssetType}&symbol=${trainSymbol}`
+    const eventSource = new EventSource(url)
 
     eventSource.onmessage = (event) => {
-      setTrainLogs((prev) => prev + event.data);
-    };
+      setTrainLogs((prev) => prev + event.data + "\n")
+    }
     eventSource.addEventListener("error", (event) => {
-      setTrainLogs((prev) => prev + "\n[Error SSE] " + event.data);
-    });
+      setTrainLogs((prev) => prev + "\n[SSE Error] " + event.data + "\n")
+    })
     eventSource.addEventListener("end", (event) => {
-      setTrainLogs((prev) => prev + "\n[Fin] " + event.data);
-      eventSource.close();
-    });
-  };
+      setTrainLogs((prev) => prev + "\n[End] " + event.data + "\n")
+      eventSource.close()
+    })
+  }
 
-  // SSE de predicción
   const startPrediction = () => {
-    setPredictLogs("Iniciando predicción...\n");
-    const url = `/api/predict?assetType=${predictAssetType}&symbol=${predictSymbol}&days=${predictDays}`;
-    const eventSource = new EventSource(url);
+    setPredictLogs("Starting prediction...\n")
+    const url = `/api/predict?assetType=${predictAssetType}&symbol=${predictSymbol}&days=${predictDays}`
+    const eventSource = new EventSource(url)
 
     eventSource.onmessage = (event) => {
-      setPredictLogs((prev) => prev + event.data);
-    };
+      setPredictLogs((prev) => prev + event.data + "\n")
+    }
     eventSource.addEventListener("error", (event) => {
-      setPredictLogs((prev) => prev + "\n[Error SSE] " + event.data);
-    });
+      setPredictLogs((prev) => prev + "\n[SSE Error] " + event.data + "\n")
+    })
     eventSource.addEventListener("end", (event) => {
-      setPredictLogs((prev) => prev + "\n[Fin] " + event.data);
-      eventSource.close();
-    });
-  };
+      setPredictLogs((prev) => prev + "\n[End] " + event.data + "\n")
+      eventSource.close()
+    })
+  }
 
   return (
-    <div style={{ padding: "2rem" }}>
-      <h1>Juno Model SSE</h1>
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-4xl font-bold mb-8 text-center">Juno Model SSE</h1>
 
-      <hr />
-      <h2>Entrenamiento</h2>
-      <div>
-        <label>Tipo de Activo:</label>
-        <select
-          value={trainAssetType}
-          onChange={(e) => setTrainAssetType(e.target.value)}
-        >
-          <option value="crypto">Criptomoneda</option>
-          <option value="stock">Acción</option>
-        </select>
-      </div>
-      <div>
-        <label>Símbolo:</label>
-        <input
-          type="text"
-          value={trainSymbol}
-          onChange={(e) => setTrainSymbol(e.target.value)}
-        />
-      </div>
-      <button onClick={startTraining}>Iniciar Entrenamiento</button>
-      <pre style={{ background: "#171717", color: "#fff", padding: "1rem", whiteSpace: "pre-wrap" }}>
-        {trainLogs}
-      </pre>
+      <div className="grid md:grid-cols-2 gap-8">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <h2 className="text-2xl font-semibold mb-4 flex items-center">
+            <RefreshCw className="mr-2" /> Training
+          </h2>
+          <div className="space-y-4">
+            <div>
+              <label className="block mb-1">Asset Type:</label>
+              <select
+                value={trainAssetType}
+                onChange={(e) => setTrainAssetType(e.target.value)}
+                className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
+              >
+                <option value="crypto">Cryptocurrency</option>
+                <option value="stock">Stock</option>
+              </select>
+            </div>
+            <div>
+              <label className="block mb-1">Symbol:</label>
+              <input
+                type="text"
+                value={trainSymbol}
+                onChange={(e) => setTrainSymbol(e.target.value)}
+                className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
+              />
+            </div>
+            <button
+              onClick={startTraining}
+              className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300 flex items-center justify-center"
+            >
+              Start Training <ArrowRight className="ml-2" />
+            </button>
+          </div>
+          <pre className="mt-4 bg-gray-100 dark:bg-gray-900 p-4 rounded-lg h-48 overflow-auto font-mono text-sm">
+            {trainLogs}
+          </pre>
+        </div>
 
-      <hr />
-      <h2>Predicción</h2>
-      <div>
-        <label>Tipo de Activo:</label>
-        <select
-          value={predictAssetType}
-          onChange={(e) => setPredictAssetType(e.target.value)}
-        >
-          <option value="crypto">Criptomoneda</option>
-          <option value="stock">Acción</option>
-        </select>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <h2 className="text-2xl font-semibold mb-4 flex items-center">
+            <BarChart2 className="mr-2" /> Prediction
+          </h2>
+          <div className="space-y-4">
+            <div>
+              <label className="block mb-1">Asset Type:</label>
+              <select
+                value={predictAssetType}
+                onChange={(e) => setPredictAssetType(e.target.value)}
+                className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
+              >
+                <option value="crypto">Cryptocurrency</option>
+                <option value="stock">Stock</option>
+              </select>
+            </div>
+            <div>
+              <label className="block mb-1">Symbol:</label>
+              <input
+                type="text"
+                value={predictSymbol}
+                onChange={(e) => setPredictSymbol(e.target.value)}
+                className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
+              />
+            </div>
+            <div>
+              <label className="block mb-1">Days to Predict (1-30):</label>
+              <input
+                type="number"
+                min="1"
+                max="30"
+                value={predictDays}
+                onChange={(e) => setPredictDays(e.target.value)}
+                className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
+              />
+            </div>
+            <button
+              onClick={startPrediction}
+              className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded transition duration-300 flex items-center justify-center"
+            >
+              Start Prediction <ArrowRight className="ml-2" />
+            </button>
+          </div>
+          <pre className="mt-4 bg-gray-100 dark:bg-gray-900 p-4 rounded-lg h-48 overflow-auto font-mono text-sm">
+            {predictLogs}
+          </pre>
+        </div>
       </div>
-      <div>
-        <label>Símbolo:</label>
-        <input
-          type="text"
-          value={predictSymbol}
-          onChange={(e) => setPredictSymbol(e.target.value)}
-        />
-      </div>
-      <div>
-        <label>Días a predecir (1-30):</label>
-        <input
-          type="number"
-          min="1"
-          max="30"
-          value={predictDays}
-          onChange={(e) => setPredictDays(e.target.value)}
-        />
-      </div>
-      <button onClick={startPrediction}>Iniciar Predicción</button>
-      <pre style={{ background: "#171717", color: "#fff", padding: "1rem", whiteSpace: "pre-wrap" }}>
-        {predictLogs}
-      </pre>
     </div>
-  );
+  )
 }
