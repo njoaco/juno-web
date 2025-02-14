@@ -1,6 +1,9 @@
 tensorflow
+matplotlib
+joblib
 pandas
 numpy
+requests
 scikit-learn
 cryptocompare
 pickle-mixin
