@@ -1,17 +1,26 @@
-# Usa Node.js 18 como base
-FROM node:18 as base
+# Usa Node.js 18 como base (versión slim para menor peso)
+FROM node:18-slim as base
 
-# Instala Python 3, pip y dependencias del sistema
-RUN apt-get update && apt-get install -y python3 python3-pip build-essential libssl-dev curl && rm -rf /var/lib/apt/lists/*
+# Instala Python 3 + pip + venv + dependencias del sistema
+RUN apt-get update && apt-get install -y \
+    python3 python3-pip python3-venv \
+    build-essential libssl-dev curl \
+ && rm -rf /var/lib/apt/lists/*
 
 # Crea directorio de trabajo
 WORKDIR /app
 
-# Copia primero requirements de Python
+# Copia el archivo de requisitos de Python
 COPY requirements.txt ./
 
-# Instala dependencias de Python
-RUN pip3 install --no-cache-dir -r requirements.txt
+# Crea un virtual environment para instalar librerías de Python
+RUN python3 -m venv /opt/venv
+# Activa el venv en la variable de entorno PATH
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Instala las dependencias Python dentro del venv
+RUN pip install --no-cache-dir --upgrade pip
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copia los package*.json de Node
 COPY package*.json ./
@@ -19,14 +28,14 @@ COPY package*.json ./
 # Instala dependencias de Node
 RUN npm install
 
-# Copia el resto del proyecto al contenedor
+# Copia el resto del proyecto
 COPY . .
 
 # Construye la aplicación Next.js
 RUN npm run build
 
-# Expone el puerto 3000 (Next.js)
+# Expone el puerto 3000
 EXPOSE 3000
 
-# Comando por defecto: arrancar Next.js en modo producción
+# Comando por defecto: iniciar Next.js en modo producción
 CMD ["npm", "run", "start"]
