@@ -24,8 +24,16 @@ export async function GET(request) {
     writer.write(encoder.encode(sseMessage));
   });
 
-  child.on('close', (code) => {
-    const endMsg = `Proceso finalizado con código: ${code}`;
+  // Agregamos listener para el evento 'exit' para capturar el código o la señal
+  child.on('exit', (code, signal) => {
+    let endMsg = '';
+    if (code !== null) {
+      endMsg = `Proceso finalizado con código: ${code}`;
+    } else if (signal !== null) {
+      endMsg = `Proceso finalizado debido a la señal: ${signal}`;
+    } else {
+      endMsg = `Proceso finalizado sin código de salida.`;
+    }
     const sseMessage = `event: end\ndata: ${endMsg}\n\n`;
     writer.write(encoder.encode(sseMessage));
     writer.close();
