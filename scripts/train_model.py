@@ -1,5 +1,11 @@
 # scripts/train_model.py
+
 import os
+# Configuración de variables de entorno antes de cualquier importación que pueda cargar TensorFlow
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # Silencia logs de TensorFlow
+os.environ['CUDA_VISIBLE_DEVICES'] = '-1'  # Desactiva la GPU
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'  # Desactiva OneDNN
+
 import sys
 import argparse
 import numpy as np
@@ -12,16 +18,11 @@ import cryptocompare
 import matplotlib.pyplot as plt
 from dotenv import load_dotenv
 
-# Desactiva algunos warnings de TF (opcional)
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # Silencia logs de TensorFlow
-os.environ['CUDA_VISIBLE_DEVICES'] = '-1'  # Desactiva GPU
-os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'  # Desactiva OneDNN
-
 load_dotenv()
 
 look_back = 60
-epochs = 50  # Reducido para evitar problemas de memoria
-batch_size = 8  # Reducido para evitar problemas de memoria
+epochs = 100
+batch_size = 16 
 
 API_KEY = os.getenv("TWELVEDATA_API_KEY")
 if not API_KEY:
@@ -43,7 +44,7 @@ def get_stock_data(symbol):
 
 def main():
     parser = argparse.ArgumentParser(description="Train model for asset")
-    parser.add_argument("--asset_type", type=str, choices=["crypto", "stock"], required=True, help="Asset type: crypto or stock")
+    parser.add_argument("--asset_type", type=str, choices=["crypto", "stock"], required=True, help="Asset type: crypto o stock")
     parser.add_argument("--symbol", type=str, required=True, help="Asset symbol")
     args = parser.parse_args()
 
@@ -82,13 +83,12 @@ def main():
     X, y = np.array(X), np.array(y)
     X = np.reshape(X, (X.shape[0], X.shape[1], 1))
     
-    plt.ioff()  # No usar modo interactivo de matplotlib
+    plt.ioff()  # Desactiva el modo interactivo de matplotlib
     
     class LossCallback(tf.keras.callbacks.Callback):
         def on_epoch_end(self, epoch, logs=None):
-            # Imprime la info de la época
             print(f"Epoch {epoch+1}/{epochs} - Loss: {logs['loss']:.6f}")
-            sys.stdout.flush()  # Fuerza vaciar buffer
+            sys.stdout.flush()
 
     model = tf.keras.Sequential([
         tf.keras.layers.LSTM(100, return_sequences=True, input_shape=(X.shape[1], 1)),
@@ -117,4 +117,4 @@ if __name__ == "__main__":
         main()
     except Exception as e:
         print(f"[ERROR] {str(e)}")
-        sys.exit(1)  # Asegura código de salida 1
+        sys.exit(1)
