@@ -85,7 +85,7 @@ def main():
 
     # Cargar scaler y modelo
     scaler_path = os.path.join(save_dir, f"scaler_{symbol}.pkl")
-    model_path = os.path.join(save_dir, f"model_{symbol}.h5")
+    model_path = os.path.join(save_dir, f"modelmini_{symbol}.h5")
 
     if not os.path.exists(scaler_path):
         print(f"[ERROR] Scaler for {symbol} not found. Please train the model first.")
