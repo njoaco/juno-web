@@ -1,4 +1,6 @@
-import { Geist, Azeret_Mono as Geist_Mono } from "next/font/google"
+import { Geist, Azeret_Mono as Geist_Mono } from 'next/font/google'
+import { Github } from 'lucide-react'
+import Link from "next/link"
 import "./globals.css"
 
 const geistSans = Geist({
@@ -12,7 +14,7 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata = {
-  title: "Juno Model SSE",
+  title: "Juno Model SSE Mini",
   description: "Train and predict using Juno Model",
 }
 
@@ -23,6 +25,14 @@ export default function RootLayout({ children }) {
         className={`${geistSans.variable} ${geistMono.variable} font-sans bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100`}
       >
         {children}
+        <Link
+          href="https://github.com/njoaco/juno-web"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-800 p-2 rounded-full shadow-lg hover:bg-gray-700 dark:hover:bg-gray-300 transition-colors duration-300"
+        >
+          <Github size={24} />
+        </Link>
       </body>
     </html>
   )
