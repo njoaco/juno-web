@@ -13,13 +13,15 @@ import matplotlib.pyplot as plt
 from dotenv import load_dotenv
 
 # Desactiva algunos warnings de TF (opcional)
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # Silencia logs de TensorFlow
+os.environ['CUDA_VISIBLE_DEVICES'] = '-1'  # Desactiva GPU
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'  # Desactiva OneDNN
 
 load_dotenv()
 
 look_back = 60
-epochs = 100
-batch_size = 16
+epochs = 50  # Reducido para evitar problemas de memoria
+batch_size = 8  # Reducido para evitar problemas de memoria
 
 API_KEY = os.getenv("TWELVEDATA_API_KEY")
 if not API_KEY:
@@ -111,4 +113,8 @@ def main():
     sys.stdout.flush()
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        print(f"[ERROR] {str(e)}")
+        sys.exit(1)  # Asegura código de salida 1

@@ -18,6 +18,11 @@ RUN python3 -m venv /opt/venv
 # Activa el venv en la variable de entorno PATH
 ENV PATH="/opt/venv/bin:$PATH"
 
+# Configura variables de entorno para TensorFlow
+ENV TF_ENABLE_ONEDNN_OPTS=0
+ENV TF_CPP_MIN_LOG_LEVEL=3
+ENV CUDA_VISIBLE_DEVICES=-1
+
 # Instala las dependencias Python dentro del venv
 RUN pip install --no-cache-dir --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
