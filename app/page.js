@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { ArrowRight, BarChart2, RefreshCw } from "lucide-react"
 import { motion } from "framer-motion"
 
@@ -8,13 +8,31 @@ export default function Page() {
   const [trainAssetType, setTrainAssetType] = useState("crypto")
   const [trainSymbol, setTrainSymbol] = useState("BTC")
   const [trainLogs, setTrainLogs] = useState("")
+  const [isTraining, setIsTraining] = useState(false)
 
   const [predictAssetType, setPredictAssetType] = useState("crypto")
   const [predictSymbol, setPredictSymbol] = useState("BTC")
   const [predictDays, setPredictDays] = useState("1")
   const [predictLogs, setPredictLogs] = useState("")
+  const [isPredicting, setIsPredicting] = useState(false)
+
+  const trainLogRef = useRef(null)
+  const predictLogRef = useRef(null)
+
+  useEffect(() => {
+    if (trainLogRef.current) {
+      trainLogRef.current.scrollTop = trainLogRef.current.scrollHeight
+    }
+  }, [trainLogRef])
+
+  useEffect(() => {
+    if (predictLogRef.current) {
+      predictLogRef.current.scrollTop = predictLogRef.current.scrollHeight
+    }
+  }, [predictLogRef])
 
   const startTraining = () => {
+    setIsTraining(true)
     setTrainLogs("Starting training...\n")
     const url = `/api/train?assetType=${trainAssetType}&symbol=${trainSymbol}`
     const eventSource = new EventSource(url)
@@ -28,10 +46,12 @@ export default function Page() {
     eventSource.addEventListener("end", (event) => {
       setTrainLogs((prev) => prev + "\n[End] " + event.data + "\n")
       eventSource.close()
+      setIsTraining(false)
     })
   }
 
   const startPrediction = () => {
+    setIsPredicting(true)
     setPredictLogs("Starting prediction...\n")
     const url = `/api/predict?assetType=${predictAssetType}&symbol=${predictSymbol}&days=${predictDays}`
     const eventSource = new EventSource(url)
@@ -45,6 +65,7 @@ export default function Page() {
     eventSource.addEventListener("end", (event) => {
       setPredictLogs((prev) => prev + "\n[End] " + event.data + "\n")
       eventSource.close()
+      setIsPredicting(false)
     })
   }
 
@@ -64,7 +85,7 @@ export default function Page() {
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md"
+          className="bg-gray-800 p-6 rounded-lg shadow-md w-full"
         >
           <h2 className="text-2xl font-semibold mb-4 flex items-center">
             <RefreshCw className="mr-2" /> Training
@@ -75,7 +96,7 @@ export default function Page() {
               <select
                 value={trainAssetType}
                 onChange={(e) => setTrainAssetType(e.target.value)}
-                className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
+                className="w-full p-2 border rounded bg-gray-700 border-gray-600 text-white"
               >
                 <option value="crypto">Cryptocurrency</option>
                 <option value="stock">Stock</option>
@@ -87,28 +108,35 @@ export default function Page() {
                 type="text"
                 value={trainSymbol}
                 onChange={(e) => setTrainSymbol(e.target.value)}
-                className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
+                className="w-full p-2 border rounded bg-gray-700 border-gray-600 text-white"
               />
             </div>
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={startTraining}
-              className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300 flex items-center justify-center"
+              disabled={isTraining}
+              className={`w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300 flex items-center justify-center ${isTraining ? "opacity-50 cursor-not-allowed" : ""}`}
             >
-              Start Training <ArrowRight className="ml-2" />
+              {isTraining ? "Training..." : "Start Training"} <ArrowRight className="ml-2" />
             </motion.button>
           </div>
-          <pre className="mt-4 bg-gray-100 dark:bg-gray-900 p-4 rounded-lg h-48 overflow-auto font-mono text-sm">
-            {trainLogs}
-          </pre>
+          <div className="mt-4 bg-gray-900 p-4 rounded-lg h-48 w-full max-w-full">
+            <pre
+              ref={trainLogRef}
+              className="h-full w-full overflow-auto font-mono text-sm whitespace-pre-wrap break-all"
+              style={{ maxWidth: "100%" }}
+            >
+              {trainLogs}
+            </pre>
+          </div>
         </motion.div>
 
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
-          className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md"
+          className="bg-gray-800 p-6 rounded-lg shadow-md w-full"
         >
           <h2 className="text-2xl font-semibold mb-4 flex items-center">
             <BarChart2 className="mr-2" /> Prediction
@@ -119,7 +147,7 @@ export default function Page() {
               <select
                 value={predictAssetType}
                 onChange={(e) => setPredictAssetType(e.target.value)}
-                className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
+                className="w-full p-2 border rounded bg-gray-700 border-gray-600 text-white"
               >
                 <option value="crypto">Cryptocurrency</option>
                 <option value="stock">Stock</option>
@@ -131,7 +159,7 @@ export default function Page() {
                 type="text"
                 value={predictSymbol}
                 onChange={(e) => setPredictSymbol(e.target.value)}
-                className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
+                className="w-full p-2 border rounded bg-gray-700 border-gray-600 text-white"
               />
             </div>
             <div>
@@ -142,21 +170,28 @@ export default function Page() {
                 max="30"
                 value={predictDays}
                 onChange={(e) => setPredictDays(e.target.value)}
-                className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
+                className="w-full p-2 border rounded bg-gray-700 border-gray-600 text-white"
               />
             </div>
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={startPrediction}
-              className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded transition duration-300 flex items-center justify-center"
+              disabled={isPredicting}
+              className={`w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded transition duration-300 flex items-center justify-center ${isPredicting ? "opacity-50 cursor-not-allowed" : ""}`}
             >
-              Start Prediction <ArrowRight className="ml-2" />
+              {isPredicting ? "Predicting..." : "Start Prediction"} <ArrowRight className="ml-2" />
             </motion.button>
           </div>
-          <pre className="mt-4 bg-gray-100 dark:bg-gray-900 p-4 rounded-lg h-48 overflow-auto font-mono text-sm">
-            {predictLogs}
-          </pre>
+          <div className="mt-4 bg-gray-900 p-4 rounded-lg h-48 w-full max-w-full">
+            <pre
+              ref={predictLogRef}
+              className="h-full w-full overflow-auto font-mono text-sm whitespace-pre-wrap break-all"
+              style={{ maxWidth: "100%" }}
+            >
+              {predictLogs}
+            </pre>
+          </div>
         </motion.div>
       </div>
     </div>

@@ -82,7 +82,7 @@ def main():
     X, y = np.array(X), np.array(y)
     X = np.reshape(X, (X.shape[0], X.shape[1], 1))
 
-    print(f"[INFO] Training model for {symbol} with {epochs} epochs... (Mini Version)")
+    print(f"[INFO] Training model for {symbol} with {epochs} epochs... (Mini Version - Do not close)")
     sys.stdout.flush()
 
     model = tf.keras.Sequential([
