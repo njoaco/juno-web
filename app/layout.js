@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata = {
-  title: "Juno Model SSE",
-  description: "Train and predict using Juno Model",
+  title: "Juno Model SSE Mini",
+  description: "Train and predict using Juno Model Nini",
 }
 
 export default function RootLayout({ children }) {
